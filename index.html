@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PalabraManía - Aprende Jugando</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <img src="icono.png" alt="Logo PalabraManía" class="logo" />
+      <h1>PalabraManía</h1>
+      <nav>
+        <ul>
+          <li><a href="#inicio">Inicio</a></li>
+          <li><a href="#caracteristicas">Características</a></li>
+          <li><a href="#juegos">Minijuegos</a></li>
+          <li><a href="#contacto">Contacto</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <section id="inicio">
+      <h2>Aprende idiomas de forma divertida</h2>
+      <p>
+        PalabraManía es una app educativa que convierte el aprendizaje de
+        idiomas en una experiencia divertida e interactiva a través de
+        minijuegos y desafíos diarios.
+      </p>
+      <p>
+        Mejora tu vocabulario, pronunciación y comprensión mientras te
+        diviertes. Ideal para estudiantes de todos los niveles.
+      </p>
+      <img
+        src="bienvenida.jpg"
+        alt="Imagen bienvenida"
+        style="
+          max-width: 100%;
+          height: auto;
+          border-radius: 10px;
+          margin-top: 20px;
+        "
+      />
+    </section>
+
+    <section id="caracteristicas">
+      <h2>¿Qué ofrece PalabraManía?</h2>
+      <ul>
+        <li>🎮 Juegos educativos para todas las edades</li>
+        <li>📈 Seguimiento de tu progreso</li>
+        <li>🏆 Retos, premios y logros desbloqueables</li>
+        <li>🌍 Aprende inglés, francés, alemán y más</li>
+      </ul>
+    </section>
+
+    <section id="juegos">
+      <h2>Minijuegos destacados</h2>
+      <ul>
+        <li>
+          <strong>🧠 Flashcards:</strong> memoriza palabras clave de forma
+          visual y rápida.
+        </li>
+        <li>
+          <strong>✍️ Completa la frase:</strong> mejora tu gramática y
+          vocabulario rellenando espacios.
+        </li>
+        <li>
+          <strong>🧩 Memoria:</strong> encuentra parejas de palabras en dos
+          idiomas.
+        </li>
+        <li>
+          <strong>🎤 Pronunciación:</strong> usa el micrófono para repetir
+          frases y mejorar tu acento.
+        </li>
+      </ul>
+      <div
+        style="
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 20px;
+          margin-top: 30px;
+        "
+      >
+        <img
+          src="flashcards.png"
+          alt="Flashcards"
+          style="width: 200px; border-radius: 8px"
+        />
+        <img
+          src="frases.png"
+          alt="Completa la frase"
+          style="width: 200px; border-radius: 8px"
+        />
+        <img
+          src="memoria.png"
+          alt="Memoria"
+          style="width: 200px; border-radius: 8px"
+        />
+        <img
+          src="pronunciacion.png"
+          alt="Pronunciación"
+          style="width: 200px; border-radius: 8px"
+        />
+      </div>
+    </section>
+
+    <section id="contacto">
+      <h2>Contacto</h2>
+      <form>
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" name="nombre" required />
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required />
+
+        <label for="mensaje">Mensaje:</label>
+        <textarea id="mensaje" name="mensaje" required></textarea>
+
+        <button type="submit">Enviar</button>
+      </form>
+    </section>
+
+    <footer>
+      <p>&copy; 2025 PalabraManía. Todos los derechos reservados.</p>
+    </footer>
+  </body>
+</html>

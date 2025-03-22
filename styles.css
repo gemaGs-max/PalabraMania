@@ -1,0 +1,132 @@
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #FFFFFF;
+  color: #333333;
+  line-height: 1.6;
+}
+
+header {
+  background-color: #4FC3F7;
+  color: white;
+  padding: 20px;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.logo {
+  width: 60px;
+  height: auto;
+  vertical-align: middle;
+  transition: transform 0.3s ease;
+}
+
+.logo:hover {
+  transform: rotate(-3deg) scale(1.05);
+}
+
+nav ul {
+  list-style: none;
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+nav a {
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  transition: color 0.3s;
+}
+
+nav a:hover {
+  color: #FFA726;
+}
+
+section {
+  padding: 40px 20px;
+  text-align: center;
+  background-color: #F0F0F0;
+  margin-bottom: 10px;
+  transition: transform 0.3s ease;
+}
+
+section:nth-of-type(even) {
+  background-color: #FFFFFF;
+}
+
+section:hover {
+  transform: scale(1.01);
+}
+
+h1, h2 {
+  color: #FFA726;
+  margin-bottom: 20px;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+ul li {
+  margin: 10px 0;
+  font-size: 1.1em;
+  transition: transform 0.2s ease, color 0.3s ease;
+}
+
+ul li:hover {
+  transform: translateX(5px);
+  color: #FFA726;
+}
+
+form {
+  max-width: 400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+input, textarea, button {
+  padding: 10px;
+  border: 1px solid #CCC;
+  border-radius: 5px;
+  font-size: 1em;
+}
+
+button {
+  background-color: #FFA726;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+button:hover {
+  background-color: #fb8c00;
+}
+
+footer {
+  background-color: #4FC3F7;
+  color: white;
+  text-align: center;
+  padding: 15px;
+  font-size: 0.9em;
+} 
+
+@media (max-width: 600px) {
+  nav ul {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
