@@ -1,27 +1,30 @@
+// Importamos librerías necesarias.
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // 👈 Necesario para logout
-import 'auth_screen.dart'; // 👈 Para volver a login tras cerrar sesión
+import 'package:shared_preferences/shared_preferences.dart'; // Para recuperar datos guardados localmente.
+import 'package:firebase_auth/firebase_auth.dart'; // 👈 Para cerrar sesión con Firebase.
+import 'auth_screen.dart'; // 👈 Para volver a la pantalla de login tras logout.
 
 import 'flashcards.dart';
 import 'completa_frase.dart';
 import 'memoria.dart';
 import 'pronunciacion_simulada.dart';
 
+/// Pantalla principal donde se eligen los minijuegos.
 class PantallaJuegos extends StatefulWidget {
   @override
   _PantallaJuegosState createState() => _PantallaJuegosState();
 }
 
 class _PantallaJuegosState extends State<PantallaJuegos> {
-  String nombreUsuario = '';
+  String nombreUsuario = ''; // Nombre que se muestra en el saludo del AppBar.
 
   @override
   void initState() {
     super.initState();
-    _cargarNombre();
+    _cargarNombre(); // Cargamos el nombre desde SharedPreferences.
   }
 
+  /// Recupera el nombre del usuario almacenado localmente.
   Future<void> _cargarNombre() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -32,17 +35,19 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE1F5FE), // Azul claro
+      backgroundColor: const Color(0xFFE1F5FE), // Azul claro.
       appBar: AppBar(
-        title: Text('¡Hola, $nombreUsuario!'),
+        title: Text('¡Hola, $nombreUsuario!'), // Muestra el saludo con el nombre recuperado.
         backgroundColor: Colors.lightBlue,
         centerTitle: true,
         actions: [
+          // Botón para cerrar sesión.
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Cerrar sesión',
             onPressed: () async {
-              await FirebaseAuth.instance.signOut();
+              await FirebaseAuth.instance.signOut(); // Cierra sesión de Firebase.
+              // Redirige a la pantalla de autenticación.
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(builder: (_) => const AuthScreen()),
               );
@@ -61,6 +66,8 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 30),
+
+            // Botón para el minijuego Flashcards.
             BotonJuego(
               titulo: '🧠 Flashcards',
               onTap: () {
@@ -70,7 +77,10 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
                 );
               },
             ),
+
             const SizedBox(height: 20),
+
+            // Botón para el minijuego Completa la frase.
             BotonJuego(
               titulo: '✍️ Completa la frase',
               onTap: () {
@@ -80,7 +90,10 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
                 );
               },
             ),
+
             const SizedBox(height: 20),
+
+            // Botón para el minijuego Memoria.
             BotonJuego(
               titulo: '🧩 Juego de Memoria',
               onTap: () {
@@ -90,7 +103,10 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
                 );
               },
             ),
+
             const SizedBox(height: 20),
+
+            // Botón para el reto de pronunciación.
             BotonJuego(
               titulo: '🎤 Reto de Pronunciación',
               onTap: () {
@@ -109,7 +125,8 @@ class _PantallaJuegosState extends State<PantallaJuegos> {
   }
 }
 
-// Widget reutilizable para los botones de los juegos
+/// Widget personalizado para los botones de los juegos.
+/// Recibe un título (texto con emoji) y una acción al hacer clic.
 class BotonJuego extends StatelessWidget {
   final String titulo;
   final VoidCallback onTap;
@@ -119,7 +136,7 @@ class BotonJuego extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: onTap,
+      onPressed: onTap, // Acción al pulsar.
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.lightBlueAccent,
         padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
@@ -135,4 +152,3 @@ class BotonJuego extends StatelessWidget {
     );
   }
 }
-
