@@ -1,10 +1,11 @@
-/* Reset básico */
+/* Reset básico para evitar diferencias entre navegadores */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+/* Estilo base del body */
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #FFFFFF;
@@ -12,6 +13,7 @@ body {
   line-height: 1.6;
 }
 
+/* Cabecera fija con color llamativo */
 header {
   background-color: #4FC3F7;
   color: white;
@@ -22,6 +24,7 @@ header {
   z-index: 1000;
 }
 
+/* Logo con animación al pasar el mouse */
 .logo {
   width: 60px;
   height: auto;
@@ -33,6 +36,7 @@ header {
   transform: rotate(-3deg) scale(1.05);
 }
 
+/* Navegación horizontal centrada */
 nav ul {
   list-style: none;
   margin-top: 10px;
@@ -41,6 +45,7 @@ nav ul {
   gap: 20px;
 }
 
+/* Enlaces del menú de navegación */
 nav a {
   text-decoration: none;
   color: white;
@@ -52,6 +57,7 @@ nav a:hover {
   color: #FFA726;
 }
 
+/* Secciones alternan fondo gris y blanco, con animación al hacer hover */
 section {
   padding: 40px 20px;
   text-align: center;
@@ -68,11 +74,13 @@ section:hover {
   transform: scale(1.01);
 }
 
+/* Títulos con color naranja */
 h1, h2 {
   color: #FFA726;
   margin-bottom: 20px;
 }
 
+/* Listas sin viñetas, con efecto al pasar el mouse */
 ul {
   list-style: none;
   padding: 0;
@@ -89,6 +97,7 @@ ul li:hover {
   color: #FFA726;
 }
 
+/* Estilos para formularios: centrado y campos con espaciado */
 form {
   max-width: 400px;
   margin: 0 auto;
@@ -97,6 +106,7 @@ form {
   gap: 15px;
 }
 
+/* Campos de entrada y botón */
 input, textarea, button {
   padding: 10px;
   border: 1px solid #CCC;
@@ -104,6 +114,7 @@ input, textarea, button {
   font-size: 1em;
 }
 
+/* Botón con estilo naranja */
 button {
   background-color: #FFA726;
   color: white;
@@ -116,17 +127,20 @@ button:hover {
   background-color: #fb8c00;
 }
 
+/* Pie de página con estilo coherente */
 footer {
   background-color: #4FC3F7;
   color: white;
   text-align: center;
   padding: 15px;
   font-size: 0.9em;
-} 
+}
 
+/* Estilo responsive para móviles */
 @media (max-width: 600px) {
   nav ul {
     flex-direction: column;
     gap: 10px;
   }
 }
+
