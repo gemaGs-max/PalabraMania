@@ -1,16 +1,14 @@
-i// Importamos librerías necesarias: control de tiempo y diseño con Flutter.
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:palabramania/services/firestore_service.dart';
 
-/// Pantalla del minijuego de Flashcards para practicar vocabulario.
 class FlashcardsPage extends StatefulWidget {
   @override
   _FlashcardsPageState createState() => _FlashcardsPageState();
 }
 
 class _FlashcardsPageState extends State<FlashcardsPage> {
-  // Lista de tarjetas con palabra en español (front) e inglés (back).
-  final List<Map<String, String>> _flashcards = [
+  final List<Map<String, String>> _flashcardsOriginales = [
     {'front': 'Manzana', 'back': 'Apple'},
     {'front': 'Perro', 'back': 'Dog'},
     {'front': 'Casa', 'back': 'House'},
@@ -18,34 +16,43 @@ class _FlashcardsPageState extends State<FlashcardsPage> {
     {'front': 'Escuela', 'back': 'School'},
   ];
 
-  int _currentIndex = 0; // Índice de la tarjeta actual.
-  int _puntos = 0; // Puntuación del usuario.
-  int _tiempoRestante = 10; // Tiempo para responder (en segundos).
-  bool _mostrarFeedback = false; // Si se muestra el mensaje correcto/incorrecto.
-  bool _bloquear = false; // Si se bloquea la interacción tras responder.
-  String _feedback = ''; // Mensaje de feedback mostrado al usuario.
-  Timer? _timer; // Temporizador para controlar el tiempo de respuesta.
+  late List<Map<String, String>> _flashcards;
+  int _currentIndex = 0;
+  int _puntos = 0;
+  int _tiempoRestante = 10;
+  bool _mostrarFeedback = false;
+  bool _bloquear = false;
+  String _feedback = '';
+  Timer? _timer;
 
-  final TextEditingController _respuestaController = TextEditingController(); // Controlador del campo de texto.
+  final TextEditingController _respuestaController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _iniciarTemporizador(); // Iniciamos el temporizador al comenzar.
+    _reiniciarJuego();
   }
 
-  /// Inicia o reinicia el temporizador para cada tarjeta.
+  void _reiniciarJuego() {
+    _flashcards = List.from(_flashcardsOriginales);
+    _flashcards.shuffle();
+    _currentIndex = 0;
+    _puntos = 0;
+    _mostrarFeedback = false;
+    _bloquear = false;
+    _respuestaController.clear();
+    _iniciarTemporizador();
+  }
+
   void _iniciarTemporizador() {
-    _timer?.cancel(); // Cancelamos el temporizador anterior si existía.
+    _timer?.cancel();
     _tiempoRestante = 10;
 
-    // Temporizador que se ejecuta cada segundo.
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
       setState(() {
         _tiempoRestante--;
       });
 
-      // Si el tiempo se agota, mostramos la respuesta correcta.
       if (_tiempoRestante == 0) {
         timer.cancel();
         _mostrarRespuestaAutomatica();
@@ -53,7 +60,6 @@ class _FlashcardsPageState extends State<FlashcardsPage> {
     });
   }
 
-  /// Muestra automáticamente la respuesta correcta si el tiempo se agota.
   void _mostrarRespuestaAutomatica() {
     final correcta = _flashcards[_currentIndex]['back']!;
     setState(() {
@@ -62,22 +68,20 @@ class _FlashcardsPageState extends State<FlashcardsPage> {
       _bloquear = true;
     });
 
-    // Esperamos 2 segundos antes de pasar a la siguiente tarjeta.
     Future.delayed(Duration(seconds: 2), _pasarSiguiente);
   }
 
-  /// Compara la respuesta del usuario con la correcta.
   void _comprobarRespuesta() {
-    if (_bloquear) return; // Si está bloqueado, no hacemos nada.
+    if (_bloquear) return;
 
     final correcta = _flashcards[_currentIndex]['back']!.toLowerCase().trim();
     final respuesta = _respuestaController.text.toLowerCase().trim();
 
-    _timer?.cancel(); // Paramos el temporizador.
+    _timer?.cancel();
 
     setState(() {
       if (respuesta == correcta) {
-        _puntos++; // Sumamos puntos si acierta.
+        _puntos++;
         _feedback = '🎉 ¡Correcto!';
       } else {
         _feedback = '❌ Era: ${_flashcards[_currentIndex]['back']}';
@@ -86,42 +90,75 @@ class _FlashcardsPageState extends State<FlashcardsPage> {
       _bloquear = true;
     });
 
-    // Mostramos la siguiente tarjeta tras 2 segundos.
     Future.delayed(Duration(seconds: 2), _pasarSiguiente);
   }
 
-  /// Pasa a la siguiente tarjeta y reinicia el estado.
   void _pasarSiguiente() {
+    if (_currentIndex + 1 >= _flashcards.length) {
+      _mostrarDialogoFinal();
+      guardarPuntuacion('flashcards', _puntos);
+      return;
+    }
+
     setState(() {
-      _currentIndex = (_currentIndex + 1) % _flashcards.length; // Cicla entre tarjetas.
-      _respuestaController.clear(); // Limpia el campo de texto.
+      _currentIndex++;
+      _respuestaController.clear();
       _mostrarFeedback = false;
       _bloquear = false;
     });
-    _iniciarTemporizador(); // Reinicia el temporizador.
+
+    _iniciarTemporizador();
   }
 
-  /// Limpieza al destruir el widget.
+  void _mostrarDialogoFinal() {
+    _timer?.cancel();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Text('✅ Juego completado'),
+        content: Text('Has conseguido $_puntos puntos.\n¿Quieres reintentar?'),
+        actions: [
+          TextButton(
+            child: Text('Salir'),
+            onPressed: () {
+              Navigator.of(context).pop(); // Cierra diálogo
+              Navigator.of(context).pop(); // Vuelve a pantalla de juegos
+            },
+          ),
+          ElevatedButton(
+            child: Text('Reintentar'),
+            onPressed: () {
+              Navigator.of(context).pop(); // Cierra diálogo
+              setState(() {
+                _reiniciarJuego(); // Reinicia todo
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void dispose() {
-    _respuestaController.dispose(); // Libera recursos del controlador.
-    _timer?.cancel(); // Cancela temporizador.
+    _respuestaController.dispose();
+    _timer?.cancel();
     super.dispose();
   }
 
-  /// Construcción de la interfaz del minijuego.
   @override
   Widget build(BuildContext context) {
     final currentCard = _flashcards[_currentIndex];
 
     return Scaffold(
-      backgroundColor: Color(0xFFE0F7FA), // Color de fondo.
+      backgroundColor: Color(0xFFE0F7FA),
       appBar: AppBar(
         title: const Text('🧠 Flashcards'),
         backgroundColor: Colors.teal,
         centerTitle: true,
         actions: [
-          // Muestra la puntuación y el tiempo restante.
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: Center(
@@ -135,7 +172,6 @@ class _FlashcardsPageState extends State<FlashcardsPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Muestra la palabra en español (front).
             Container(
               padding: EdgeInsets.all(30),
               margin: EdgeInsets.all(20),
@@ -158,35 +194,26 @@ class _FlashcardsPageState extends State<FlashcardsPage> {
                 style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
               ),
             ),
-
             const SizedBox(height: 20),
-
-            // Campo donde el usuario escribe la palabra en inglés.
             TextField(
               controller: _respuestaController,
-              enabled: !_bloquear, // Se desactiva tras responder.
+              enabled: !_bloquear,
               decoration: InputDecoration(
                 hintText: 'Escribe la palabra en inglés',
                 border: OutlineInputBorder(),
               ),
               textAlign: TextAlign.center,
             ),
-
             const SizedBox(height: 20),
-
-            // Botón para comprobar la respuesta.
             ElevatedButton(
               onPressed: _bloquear ? null : _comprobarRespuesta,
-              child: const Text('Comprobar'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.teal,
                 padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
               ),
+              child: const Text('Comprobar'),
             ),
-
             const SizedBox(height: 20),
-
-            // Muestra el resultado si ya se ha respondido.
             if (_mostrarFeedback)
               AnimatedOpacity(
                 opacity: 1.0,
@@ -206,3 +233,5 @@ class _FlashcardsPageState extends State<FlashcardsPage> {
     );
   }
 }
+
+

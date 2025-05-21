@@ -1,6 +1,7 @@
 // Importamos los paquetes necesarios: Flutter y el plugin just_audio para reproducir sonidos.
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:palabramania/services/firestore_service.dart';
 
 /// Pantalla del minijuego simulado de pronunciación.
 /// El usuario escucha una frase y simula que la repite.

@@ -1,20 +1,17 @@
-// Importamos el paquete principal de Flutter para construir interfaces gráficas.
 import 'package:flutter/material.dart';
+import 'package:palabramania/services/firestore_service.dart';
 
-/// Widget principal que representa la pantalla del minijuego "Completa la frase".
 class CompletaFrasePage extends StatefulWidget {
   @override
   _CompletaFrasePageState createState() => _CompletaFrasePageState();
 }
 
-/// Estado del widget, donde se maneja la lógica del juego.
 class _CompletaFrasePageState extends State<CompletaFrasePage> {
-  // Lista de frases con opciones y la respuesta correcta.
   final List<Map<String, dynamic>> _frases = [
     {
-      'texto': 'She ___ a teacher.', // Frase a completar
-      'opciones': ['is', 'are', 'be'], // Opciones de respuesta
-      'correcta': 'is', // Respuesta correcta
+      'texto': 'She ___ a teacher.',
+      'opciones': ['is', 'are', 'be'],
+      'correcta': 'is',
     },
     {
       'texto': 'I ___ from Spain.',
@@ -28,66 +25,102 @@ class _CompletaFrasePageState extends State<CompletaFrasePage> {
     },
   ];
 
-  int _indice = 0; // Índice actual de la frase que se muestra.
-  String _respuestaSeleccionada = ''; // Almacena la opción elegida por el usuario.
-  bool _mostrandoResultado = false; // Indica si se está mostrando el resultado (correcto/incorrecto).
+  int _indice = 0;
+  String _respuestaSeleccionada = '';
+  bool _mostrandoResultado = false;
+  int _puntos = 0;
 
-  /// Verifica si la respuesta del usuario es correcta y muestra el resultado.
   void _verificarRespuesta(String opcion) {
-    if (_mostrandoResultado) return; // Si ya se está mostrando el resultado, no hacer nada.
+    if (_mostrandoResultado) return;
 
     setState(() {
       _respuestaSeleccionada = opcion;
       _mostrandoResultado = true;
+      if (opcion == _frases[_indice]['correcta']) {
+        _puntos++;
+      }
     });
 
-    // Espera 2 segundos antes de pasar a la siguiente frase.
     Future.delayed(Duration(seconds: 2), () {
-      setState(() {
-        _indice = (_indice + 1) % _frases.length; // Avanza a la siguiente frase.
-        _respuestaSeleccionada = '';
-        _mostrandoResultado = false;
-      });
+      if (_indice + 1 < _frases.length) {
+        setState(() {
+          _indice++;
+          _respuestaSeleccionada = '';
+          _mostrandoResultado = false;
+        });
+      } else {
+        guardarPuntuacion('completa_frase', _puntos);
+        _mostrarDialogoFinal();
+      }
     });
   }
 
-  /// Construye la interfaz gráfica del minijuego.
+  void _mostrarDialogoFinal() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('¡Juego completado!'),
+        content: Text('Tu puntuación: $_puntos'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Cerrar diálogo
+              setState(() {
+                _indice = 0;
+                _respuestaSeleccionada = '';
+                _mostrandoResultado = false;
+                _puntos = 0;
+              });
+            },
+            child: Text('Reintentar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
+            child: Text('Salir'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final fraseActual = _frases[_indice]; // Obtenemos la frase actual a mostrar.
-    final esCorrecta = _respuestaSeleccionada == fraseActual['correcta']; // Comprobamos si la respuesta es correcta.
+    final fraseActual = _frases[_indice];
+    final esCorrecta = _respuestaSeleccionada == fraseActual['correcta'];
 
     return Scaffold(
-      backgroundColor: Color(0xFFFFF3E0), // Color de fondo claro.
+      backgroundColor: Color(0xFFFFF3E0),
       appBar: AppBar(
         title: Text('✍️ Completa la frase'),
         backgroundColor: Colors.orangeAccent,
         centerTitle: true,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Center(child: Text('Puntos: $_puntos')),
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Mostramos el texto de la frase con espacio para completar.
             Text(
               fraseActual['texto'],
               style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 30),
-            // Generamos los botones de opciones dinámicamente.
             ...fraseActual['opciones'].map<Widget>((opcion) {
-              Color color = Colors.blueAccent; // Color por defecto del botón.
-
-              // Si ya se ha respondido, cambiamos el color según si es correcta o incorrecta.
+              Color color = Colors.blueAccent;
               if (_mostrandoResultado) {
                 if (opcion == fraseActual['correcta']) {
-                  color = Colors.green; // Correcta
+                  color = Colors.green;
                 } else if (opcion == _respuestaSeleccionada) {
-                  color = Colors.red; // Incorrecta seleccionada
+                  color = Colors.red;
                 } else {
-                  color = Colors.grey; // Resto desactivadas
+                  color = Colors.grey;
                 }
               }
 
@@ -95,7 +128,7 @@ class _CompletaFrasePageState extends State<CompletaFrasePage> {
                 width: double.infinity,
                 margin: EdgeInsets.only(bottom: 12),
                 child: ElevatedButton(
-                  onPressed: () => _verificarRespuesta(opcion), // Comprobamos la respuesta al pulsar.
+                  onPressed: () => _verificarRespuesta(opcion),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: color,
                     padding: EdgeInsets.symmetric(vertical: 15),
@@ -104,12 +137,11 @@ class _CompletaFrasePageState extends State<CompletaFrasePage> {
                 ),
               );
             }).toList(),
-            // Si se ha respondido, mostramos si fue correcto o incorrecto.
             if (_mostrandoResultado)
               Padding(
                 padding: const EdgeInsets.only(top: 20),
                 child: Text(
-                  esCorrecta ? ' ¡Correcto!' : ' ¡Incorrecto!',
+                  esCorrecta ? '✅ ¡Correcto!' : '❌ ¡Incorrecto!',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,

@@ -1,26 +1,24 @@
-// Importamos los paquetes necesarios de Flutter.
 import 'package:flutter/material.dart';
-import 'dart:math'; // Para mezclar aleatoriamente las cartas.
+import 'dart:math';
+import 'package:palabramania/services/firestore_service.dart';
 
-/// Widget principal del minijuego de memoria.
 class MemoriaPage extends StatefulWidget {
   @override
   _MemoriaPageState createState() => _MemoriaPageState();
 }
 
-/// Estado del juego donde se maneja la lógica del emparejamiento.
 class _MemoriaPageState extends State<MemoriaPage> {
-  List<_CartaMemoria> _cartas = [];      // Lista de cartas mezcladas.
-  List<int> _seleccionadas = [];         // Índices de las cartas seleccionadas actualmente.
-  bool _bloqueado = false;               // Indica si se debe bloquear temporalmente la interacción.
+  List<_CartaMemoria> _cartas = [];
+  List<int> _seleccionadas = [];
+  bool _bloqueado = false;
+  int _puntos = 0;
 
   @override
   void initState() {
     super.initState();
-    _generarCartas(); // Generamos las cartas al iniciar la pantalla.
+    _generarCartas();
   }
 
-  /// Genera y mezcla las cartas a partir de una lista de pares de palabras.
   void _generarCartas() {
     final pares = [
       {'es': 'Casa', 'en': 'House'},
@@ -32,21 +30,18 @@ class _MemoriaPageState extends State<MemoriaPage> {
     List<_CartaMemoria> todas = [];
 
     for (var par in pares) {
-      // Creamos dos cartas por par: una en español y otra en inglés, con el mismo id.
       todas.add(_CartaMemoria(texto: par['es']!, id: par['es']!));
       todas.add(_CartaMemoria(texto: par['en']!, id: par['es']!));
     }
 
-    todas.shuffle(Random()); // Mezclamos las cartas aleatoriamente.
-
+    todas.shuffle(Random());
     setState(() {
       _cartas = todas;
+      _puntos = 0;
     });
   }
 
-  /// Controla la lógica al seleccionar una carta.
   void _seleccionarCarta(int index) {
-    // Si el juego está bloqueado o la carta ya está girada o descubierta, no hacemos nada.
     if (_bloqueado || _cartas[index].descubierta || _cartas[index].girada) return;
 
     setState(() {
@@ -54,83 +49,97 @@ class _MemoriaPageState extends State<MemoriaPage> {
       _seleccionadas.add(index);
     });
 
-    // Cuando hay dos cartas seleccionadas, comprobamos si forman un par.
     if (_seleccionadas.length == 2) {
       _bloqueado = true;
 
       int i1 = _seleccionadas[0];
       int i2 = _seleccionadas[1];
-
       bool esPar = _cartas[i1].id == _cartas[i2].id;
 
       setState(() {
-        // Cambiamos el color temporalmente para mostrar si acertó o no.
         _cartas[i1].colorTemporal = esPar ? Colors.green : Colors.red;
         _cartas[i2].colorTemporal = esPar ? Colors.green : Colors.red;
       });
 
-      // Esperamos 1 segundo para mostrar el resultado antes de continuar.
       Future.delayed(Duration(seconds: 1), () {
         setState(() {
           if (esPar) {
-            // Si acertó, dejamos las cartas descubiertas.
             _cartas[i1].descubierta = true;
             _cartas[i2].descubierta = true;
+            _puntos++;
           } else {
-            // Si falló, las giramos de nuevo.
             _cartas[i1].girada = false;
             _cartas[i2].girada = false;
           }
 
-          // Limpiamos estado temporal.
           _cartas[i1].colorTemporal = null;
           _cartas[i2].colorTemporal = null;
           _seleccionadas.clear();
           _bloqueado = false;
         });
+
+        if (_cartas.every((c) => c.descubierta)) {
+          guardarPuntuacion('memoria', _puntos);
+          _mostrarDialogoFinal();
+        }
       });
     }
   }
 
-  /// Construye la interfaz del juego.
+  void _mostrarDialogoFinal() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('🎉 ¡Has encontrado todas las parejas!'),
+        content: Text('Tu puntuación: $_puntos'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _generarCartas();
+            },
+            child: Text('Reintentar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
+            child: Text('Salir'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Verifica si todas las cartas han sido descubiertas.
-    bool completado = _cartas.every((c) => c.descubierta);
-
     return Scaffold(
       appBar: AppBar(
         title: Text('🧩 Juego de Memoria'),
         backgroundColor: Colors.purple,
         centerTitle: true,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Center(child: Text('Puntos: $_puntos')),
+          ),
+        ],
       ),
       backgroundColor: Color(0xFFF3E5F5),
       body: Column(
         children: [
           SizedBox(height: 20),
-          if (completado)
-            // Muestra mensaje de éxito si el juego se ha completado.
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                '🎉 ¡Has encontrado todas las parejas!',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-            ),
           Expanded(
-            // Grid que muestra todas las cartas.
             child: GridView.builder(
               padding: EdgeInsets.all(20),
               itemCount: _cartas.length,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4, // 4 columnas.
+                crossAxisCount: 4,
                 crossAxisSpacing: 10,
                 mainAxisSpacing: 10,
               ),
               itemBuilder: (context, index) {
                 final carta = _cartas[index];
                 return GestureDetector(
-                  onTap: () => _seleccionarCarta(index), // Selecciona la carta al tocarla.
+                  onTap: () => _seleccionarCarta(index),
                   child: Container(
                     decoration: BoxDecoration(
                       color: carta.colorTemporal ??
@@ -167,13 +176,12 @@ class _MemoriaPageState extends State<MemoriaPage> {
   }
 }
 
-/// Clase que representa una carta del juego de memoria.
 class _CartaMemoria {
-  final String texto; // Texto visible de la carta.
-  final String id;    // Identificador para hacer coincidir parejas.
-  bool girada = false; // Si la carta está girada temporalmente.
-  bool descubierta = false; // Si la carta ya fue emparejada correctamente.
-  Color? colorTemporal; // Color para mostrar resultado (acierto/error).
+  final String texto;
+  final String id;
+  bool girada = false;
+  bool descubierta = false;
+  Color? colorTemporal;
 
   _CartaMemoria({required this.texto, required this.id});
 }
